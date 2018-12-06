@@ -1,8 +1,6 @@
 package exercise1;
 
-import java.util.Optional;
-import java.util.OptionalInt;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Represents a student.
@@ -11,13 +9,19 @@ import java.util.Set;
  * These scores are expressed as integers on a scale from 0 to 20.
  */
 public class Student {
+    private String name;
+    private String registrationumNber;
+    HashMap<String , Integer > ScoreByCourse = new HashMap<>();   //mettre integer et pas int car il faut mettre une classe dans la syntaxe
+
+
     /**
      * Creates a new Student.
      *
      * @throws NullPointerException if one of the parameter is null.
      */
-    public Student(String name, String registrationNumber) {
-
+    public Student(String name, String registrationumNber) {
+        this.name=name;
+        this.registrationumNber=registrationumNber;
     }
 
     /**
@@ -28,7 +32,7 @@ public class Student {
      * @throws IllegalArgumentException if the score is less than 0 or greater than 20.
      */
     public void setScore(String course, int score) {
-
+        this.ScoreByCourse.put(course,score);     //pas vraiment besoin du this
     }
 
     /**
@@ -36,8 +40,13 @@ public class Student {
      *
      * @return the score if found, <code>OptionalInt#empty()</code> otherwise.
      */
-    public OptionalInt getScore(String course) {
-        return null;
+
+    public OptionalInt getScore(String course) {             /*optional?*/
+        Integer nullableScore=ScoreByCourse.get(course);
+        return nullableScore!=null?  OptionalInt.of(nullableScore):OptionalInt.empty();      /*le get(String cours) va retouner toutes les valeurs associées à la clé cours
+                                                                        OptionalInt.of() c'est pour transformer l'entier ScoreByCourse.get(course) en un objet de la classe Integer
+                                                                           optional sert à retourner nal si ScoreByCourse.get(course) ne signifie rien (tout ceci est predefini dans la classe Integer)
+                                                                           si nullableScore!=null on retourne le score*/
     }
 
     /**
@@ -46,7 +55,17 @@ public class Student {
      * @return the average score or 0 if there is none.
      */
     public double averageScore() {
-        return 0;
+        /*int count=0;
+        for (Integer score : ScoreByCourse.values()) {
+            count++;
+            totalScore+=score;
+        }
+        return totalScore/count;*/
+
+        return ScoreByCourse.values().stream() //on recupère les valeurs de la map dans un flux
+            .mapToInt(Integer :: intValue)   //on converti en entiers
+            .average()        //on calcule la moyenne avec une foction average predefinie
+            .orElse(0.0);
     }
 
     /**
@@ -55,7 +74,21 @@ public class Student {
      * @return the best scored course or <code>Optional#empty()</code> if there is none.
      */
     public Optional<String> bestCourse() {
-        return null;
+        /*int bestScore=0;
+        string bestCourse;
+        for (String course : ScoreByCourse.keySet()) {
+            if(getScore(course)>bestScore) {
+                bestScore=getScore(course);
+                bestCourse=course;
+            }
+        }
+
+            return bestCourse;*/
+
+            return ScoreByCourse.entrySet().stream()        //metre la map dans un flux
+            .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))  //trier le fux par odre decroissant
+            .map(Map.Entry::getKey)
+            .findFirst;    //le premier elt ets le plus grand recherché
     }
 
     /**
@@ -64,7 +97,11 @@ public class Student {
      * @return the highest score or 0 if there is none.
      */
     public int bestScore() {
-        return 0;
+        return ScoreByCourse.entrySet().stream()
+            .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))  //trier le fux par odre decroissant
+            .mapToInt(Map.Entry::getValue)
+            .findFirst
+            .orElse(0);
     }
 
     /**
@@ -72,7 +109,18 @@ public class Student {
      * A course is considered as passed if its score is higher than 12.
      */
     public Set<String> failedCourses() {
-        return null;
+      /*  return ScoreByCourse.entrySet().stream()
+            .filter(entry -> entry.getValue()<12)
+            .sorted(Map.Entry.comparingByValue(comparator.reverseOrder()))
+            .collect(collectors.toCollection(LinkedHashSet::new));
+            */
+
+      List<Map.Entry<String, Integer>> fiteredEntries= new ArrayList<>();
+      for(Map.Entry<String, Integer> entry:: ScoreByCourse.entrySet()){
+          if(entry.getValue()<12){
+              fiteredEntries.add(entry);
+          }
+        }
     }
 
     /**
